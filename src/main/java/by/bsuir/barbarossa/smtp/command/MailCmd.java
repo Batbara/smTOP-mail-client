@@ -1,16 +1,12 @@
 package by.bsuir.barbarossa.smtp.command;
 
-import by.bsuir.barbarossa.entity.Mail;
+import by.bsuir.barbarossa.entity.Envelope;
 import by.bsuir.barbarossa.entity.Response;
 import by.bsuir.barbarossa.entity.User;
 import by.bsuir.barbarossa.smtp.ClientRequest;
-import by.bsuir.barbarossa.smtp.exception.ReceivingResponseError;
-import by.bsuir.barbarossa.smtp.exception.SendingCommandError;
-import by.bsuir.barbarossa.smtp.exception.SmtpException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 public class MailCmd implements  SmtpCommand, ClientRequest {
@@ -18,30 +14,40 @@ public class MailCmd implements  SmtpCommand, ClientRequest {
 
     private BufferedReader in;
     private PrintWriter out;
-    public Response execute(BufferedReader input, PrintWriter output, Mail mail) throws SmtpException {
-        this.in = input;
-        this.out = output;
+    private Envelope envelope;
 
-        User sender = mail.getEnvelope().getSender();
+    public MailCmd(BufferedReader in, PrintWriter out, Envelope envelope) {
+        this.in = in;
+        this.out = out;
+        this.envelope = envelope;
+    }
+
+    public Response execute() throws SmtpException {
+
+        User sender = envelope.getSender();
         String mailAddress = sender.getMailAddress();
         String mailCommand = String.format(MAIL, mailAddress);
         sendToServer(mailCommand);
 
         String serverMessage = receiveFromServer();
-        return new Response(serverMessage);
+        return new Response(mailCommand, serverMessage);
     }
 
-    public void sendToServer(String message) throws SendingCommandError {
+    public void sendToServer(String message) throws SendingCommandException {
 
         out.write(message);
+        out.flush();
     }
 
-    public String receiveFromServer() throws ReceivingResponseError {
+    public String receiveFromServer() throws ReceivingResponseException {
         try {
-            String line = in.readLine();
-            return line;
+            StringBuilder builder = new StringBuilder();
+            do {
+                builder.append(in.readLine());
+            } while (in.ready());
+            return builder.toString();
         } catch (IOException e) {
-            throw new ReceivingResponseError("Error while reading server response form MAIL command", e);
+            throw new ReceivingResponseException("Error while reading server response form MAIL command", e);
         }
     }
 }

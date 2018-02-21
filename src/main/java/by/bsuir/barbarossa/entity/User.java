@@ -5,13 +5,15 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class User implements Serializable{
+public class User implements Serializable {
+    private final static String CREDENTIALS = "%s%s";
     private String userName;
     private String password;
     private Address eMail;
     private InetAddress localHostName;
 
-    public User(){}
+    public User() {
+    }
 
     public User(String userName, String password, InetAddress localHostName) {
         this.userName = userName;
@@ -27,8 +29,21 @@ public class User implements Serializable{
         this.userName = userName;
     }
 
+    public String getEncodedCredentials() {
+
+        return encode(String.format(CREDENTIALS, userName, password));
+    }
+
+    public String getEncodedUserName() {
+        return encode(userName);
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public String getEncodedPassword() {
+        return encode(password);
     }
 
     public void setPassword(String password) {
@@ -43,11 +58,16 @@ public class User implements Serializable{
         this.eMail = eMail;
     }
 
-    public String getLocalHostName() {
+    public String getLocalHostAddress() {
         return localHostName.getHostAddress();
     }
 
     public void setLocalHostName(InetAddress localHostName) {
         this.localHostName = localHostName;
+    }
+
+    private String encode(String strToEncode) {
+        //   return DatatypeConverter.printBase64Binary(strToEncode.getBytes());
+        return Base64.getEncoder().encodeToString(strToEncode.getBytes(StandardCharsets.UTF_8));
     }
 }

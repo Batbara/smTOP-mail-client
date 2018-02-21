@@ -1,16 +1,11 @@
 package by.bsuir.barbarossa.smtp.command;
 
 import by.bsuir.barbarossa.entity.Content;
-import by.bsuir.barbarossa.entity.Mail;
 import by.bsuir.barbarossa.entity.Response;
 import by.bsuir.barbarossa.smtp.ClientRequest;
-import by.bsuir.barbarossa.smtp.exception.ReceivingResponseError;
-import by.bsuir.barbarossa.smtp.exception.SendingCommandError;
-import by.bsuir.barbarossa.smtp.exception.SmtpException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 public class DataCmd implements SmtpCommand, ClientRequest {
@@ -20,11 +15,13 @@ public class DataCmd implements SmtpCommand, ClientRequest {
     private PrintWriter out;
     private Content content;
 
-    public Response execute(BufferedReader input, PrintWriter output, Mail mail) throws SmtpException {
-        this.in = input;
-        this.out = output;
+    public DataCmd(BufferedReader in, PrintWriter out, Content content) {
+        this.in = in;
+        this.out = out;
+        this.content = content;
+    }
 
-        this.content = mail.getContent();
+    public Response execute() throws SmtpException {
 
         sendToServer(DATA);
         String serverMessage = receiveFromServer();
@@ -34,18 +31,23 @@ public class DataCmd implements SmtpCommand, ClientRequest {
             serverMessage = receiveFromServer();
         }
 
-        return new Response(serverMessage);
+        return new Response(DATA, serverMessage);
     }
 
-    public void sendToServer(String message) throws SendingCommandError {
+    public void sendToServer(String message) throws SendingCommandException {
         out.write(message);
+        out.flush();
     }
 
-    public String receiveFromServer() throws ReceivingResponseError {
+    public String receiveFromServer() throws ReceivingResponseException {
         try {
-            return in.readLine();
+            StringBuilder builder = new StringBuilder();
+            do {
+                builder.append(in.readLine());
+            } while (in.ready());
+            return builder.toString();
         } catch (IOException e) {
-            throw new ReceivingResponseError("Error while reading server response from DATA command", e);
+            throw new ReceivingResponseException("Error while reading server response from DATA command", e);
         }
     }
 }

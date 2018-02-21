@@ -1,4 +1,4 @@
-package by.bsuir.barbarossa.smtp.exception;
+package by.bsuir.barbarossa.smtp.command;
 
 public class SmtpException extends Exception {
     public SmtpException() {

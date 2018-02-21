@@ -1,61 +1,67 @@
 package by.bsuir.barbarossa.smtp.command;
 
-import by.bsuir.barbarossa.entity.Mail;
+import by.bsuir.barbarossa.entity.Envelope;
 import by.bsuir.barbarossa.entity.Response;
 import by.bsuir.barbarossa.entity.User;
 import by.bsuir.barbarossa.smtp.ClientRequest;
-import by.bsuir.barbarossa.smtp.exception.ReceivingResponseError;
-import by.bsuir.barbarossa.smtp.exception.SendingCommandError;
-import by.bsuir.barbarossa.smtp.exception.SmtpException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 public class AuthCmd implements SmtpCommand, ClientRequest {
-    private static final String AUTH = "AUTH LOGIN \r\n";
+    private static final String AUTH = "AUTH PLAIN %s\r\n";
     private BufferedReader in;
     private PrintWriter out;
+    private Envelope envelope;
+
+    public AuthCmd(BufferedReader in, PrintWriter out, Envelope envelope) {
+        this.in = in;
+        this.out = out;
+        this.envelope = envelope;
+    }
 
     @Override
-    public Response execute(BufferedReader input, PrintWriter output, Mail mail) throws SmtpException {
-        this.in = input;
-        this.out = output;
+    public Response execute() throws SmtpException {
+        User sender = envelope.getSender();
 
-        sendToServer(AUTH);
+         String userName = sender.getEncodedUserName();
+          String password = sender.getEncodedPassword();
+        String credentials = sender.getEncodedCredentials();
+//          sendToServer(AUTH);
+//          receiveFromServer();
+//          sendToServer(credentials);
+//          //sendToServer(userName);
+//          receiveFromServer();
+         // sendToServer(password);
+        //String credentials = sender.getEncodedCredentials();
+
+        String clientRequest = String.format(AUTH, credentials);
+        sendToServer(clientRequest);
         String serverResponse = receiveFromServer();
-        if (serverResponse != null) {
-            User sender = mail.getEnvelope().getSender();
-            String userName = sender.getUserName();
-            String password = sender.getPassword();
 
-            sendToServer(userName);
+        return new Response(clientRequest, serverResponse);
 
-            sendToServer(password);
-            return new Response(receiveFromServer());
-        } else {
-            throw new SmtpException("error");
-        }
 
     }
 
     @Override
-    public void sendToServer(String message) throws SendingCommandError {
+    public void sendToServer(String message) throws SendingCommandException {
         out.write(message);
         out.flush();
     }
 
     @Override
-    public String receiveFromServer() throws ReceivingResponseError {
+    public String receiveFromServer() throws ReceivingResponseException {
         try {
-            String response = null;
-            while (in.readLine()!=null) {
-                response = response+in.readLine();
-           }
-            return response;
+            StringBuilder builder = new StringBuilder();
+            String response;
+            do {
+                builder.append(in.readLine()).append("\n");
+            } while (in.ready());
+            return builder.toString();
         } catch (IOException e) {
-            throw new ReceivingResponseError("Error while reading server response form AUTH command", e);
+            throw new ReceivingResponseException("Error while reading server response form AUTH command", e);
         }
     }
 }

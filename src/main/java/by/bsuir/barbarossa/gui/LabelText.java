@@ -1,6 +1,6 @@
 package by.bsuir.barbarossa.gui;
 
-public final class TextConstant {
+public final class LabelText {
     public static final String MAIN_SHELL_TITLE = "SmTOP | Top smtp client";
     public static final String FROM_LABEL = "From:";
     public static final String TO_LABEL = "To:";
@@ -11,5 +11,5 @@ public final class TextConstant {
     public static final String FEEDBACK = "Feedback:";
     public static final String SEND_BUTTON = "Send";
 
-    private TextConstant(){}
+    private LabelText(){}
 }
