@@ -22,9 +22,10 @@ public class MailService {
         MailValidator validator = ValidatorFactory.getInstance().getMailValidator();
         MailFormer mailFormer = EntityFormerFactory.getInstance().getMailFormer();
 
-        // String userName = textFieldMap.getTextOf(TextConstant.U)
+         //String userName = textFieldMap.getTextOf(TextConstant.U)
         //  User sender = mailFormer.formSender()
         try {
+
             String mailSubject = inputFieldMap.getTextOf(LabelText.LETTER_SUBJECT);
             String mailBody = inputFieldMap.getTextOf(LabelText.LETTER_CONTENT);
             validator.checkMailContent(mailSubject, mailBody);
@@ -32,14 +33,17 @@ public class MailService {
             Content mailContent = mailFormer.formContent(mailSubject, mailBody);
 
             String senderAddress = inputFieldMap.getTextOf(LabelText.FROM_LABEL);
-            String receiverAddress = inputFieldMap.getTextOf(LabelText.TO_LABEL);
-
             validator.checkMailAddress(senderAddress);
+
+            String userName = inputFieldMap.getTextOf(LabelText.USER_NAME);
+            String password = inputFieldMap.getTextOf(LabelText.PASSWORD);
+            //TODO: validate user name and password
+
+            User user = mailFormer.formSender(userName, password, new Address(senderAddress), InetAddress.getLocalHost());
+
+            String receiverAddress = inputFieldMap.getTextOf(LabelText.TO_LABEL);
             validator.checkMailAddress(receiverAddress);
 
-            User user = new User();
-            user.seteMail(new Address(senderAddress));
-            user.setLocalHostName(InetAddress.getLocalHost());
 
             Envelope envelope = mailFormer.formEnvelope(user, new Address(receiverAddress));
             Mail mail = mailFormer.formMail(envelope, mailContent);

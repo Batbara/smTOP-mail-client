@@ -14,7 +14,7 @@ public class Startup {
         PropertyConfigurator.configure(getSourcePath(log4jConfigFile));
 
         ApplicationController controller = new ApplicationController();
-       // controller.startApplication();
+        controller.startApplication();
 
     }
 

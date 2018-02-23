@@ -172,7 +172,7 @@ public class Connector implements Runnable {
             public void run() {
                 if (!logMemo.isDisposed()) {
                     logMemo.append(message.getMessage());
-                    logMemo.getParent().layout();
+                   // logMemo.getParent().layout();
                 }
             }
         });

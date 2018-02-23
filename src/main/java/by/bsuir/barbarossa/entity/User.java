@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class User implements Serializable {
-    private final static String CREDENTIALS = "%s%s";
+    private final static String CREDENTIALS = "\000%s\000%s";
     private String userName;
     private String password;
     private Address eMail;

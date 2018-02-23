@@ -28,7 +28,7 @@ public class ApplicationController implements Observer {
     public ApplicationController() {
         mainShell = new MainShell();
         mainShell.addControllerAsObserver(this);
-        Connector connector = new Connector();
+      /* Connector connector = new Connector();
         connector.setMainShell(mainShell);
 
         Mail mail = null;
@@ -37,14 +37,14 @@ public class ApplicationController implements Observer {
         } catch (SmtpException e) {
             e.printStackTrace();
         }
-        //Server server = new Server("smtp.gmail.com", 465);
+        Server server = new Server("smtp.gmail.com", 465);
 
-        Server server = new Server("smtp.mail.ru",465);
+      //  Server server = new Server("smtp.mail.ru",465);
         connector.setMail(mail);
         connector.setServer(server);
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(connector);
+        executor.execute(connector);*/
     }
 
     public void startApplication() {
@@ -55,14 +55,15 @@ public class ApplicationController implements Observer {
         Mail mail = new Mail();
 
         Content content = new Content();
-        content.setBody("Hello there!");
+        content.setSubject("Heeeey");
+        content.setBody("Hello there! Like a boss");
 
         Envelope envelope = new Envelope();
         try {
             InetAddress localHostAddress = InetAddress.getLocalHost();
 
-            User user = new User("talah-barbara@mail.ru", "barbara12", localHostAddress);
-            user.seteMail(new Address("talah-barbara@mail.ru"));
+            User user = new User("lolkekovich2049@gmail.com", "LOLkek42", localHostAddress);
+            user.seteMail(new Address("lolkekovich2049@gmail.com"));
 
             Address recevier = new Address("talahbarbara@gmail.com");
             envelope.setSender(user);
@@ -78,6 +79,7 @@ public class ApplicationController implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+
         if (arg instanceof InputFieldMap) {
             InputFieldMap inputFieldMap = (InputFieldMap) arg;
             ServiceFactory serviceFactory = ServiceFactory.getInstance();
@@ -96,8 +98,8 @@ public class ApplicationController implements Observer {
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 executor.execute(connector);
             } catch (ServiceException e) {
-                //  display error
-                System.err.println("ERROR!!");
+               mainShell.openMessageDialog(e.getMessage());
+                System.err.println(e.getMessage());
             }
         }
     }

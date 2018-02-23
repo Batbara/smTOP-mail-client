@@ -11,5 +11,8 @@ public final class LabelText {
     public static final String FEEDBACK = "Feedback:";
     public static final String SEND_BUTTON = "Send";
 
+    public static final String USER_NAME = "User name:";
+    public static final String PASSWORD = "Password:";
+
     private LabelText(){}
 }

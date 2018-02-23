@@ -43,7 +43,6 @@ public class EhloCmd implements SmtpCommand, ClientRequest {
         try {
             StringBuilder builder = new StringBuilder();
 
-
             do {
                 builder.append(in.readLine()).append("\n");
             } while (in.ready());

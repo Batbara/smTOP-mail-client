@@ -4,11 +4,14 @@ import by.bsuir.barbarossa.controller.ApplicationController;
 import by.bsuir.barbarossa.gui.listener.SelectAllEventHandler;
 import by.bsuir.barbarossa.gui.listener.SendMailListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
@@ -16,6 +19,7 @@ import org.eclipse.swt.widgets.Text;
 import java.util.Observable;
 
 public class MainShell extends Observable {
+    private final static String ERROR = "Error";
     private Display display;
     private Shell mainShell;
 
@@ -25,16 +29,32 @@ public class MainShell extends Observable {
 
     public MainShell() {
         display = new Display();
-        //userCredentialsDialog = new UserCredentialsDialog(mainShell);
-       // userCredentialsDialog.open();
         inputFieldMap = new InputFieldMap();
 
-        mainShell = new Shell(display, SWT.CLOSE | SWT.TITLE | SWT.MIN);
-
-
+        mainShell = new Shell(display, SWT.CLOSE | SWT.TITLE | SWT.MIN );
+        centerMainShell();
         initMainView();
 
+        userCredentialsDialog = new UserCredentialsDialog(mainShell, inputFieldMap);
         mainShell.pack();
+        userCredentialsDialog.open();
+    }
+
+    public void sendData() {
+        setChanged();
+        notifyObservers(inputFieldMap);
+    }
+
+    public void openMessageDialog(String message) {
+
+        MessageBox dialog =
+                new MessageBox(mainShell, SWT.ICON_ERROR | SWT.OK | SWT.CANCEL);
+        dialog.setText(ERROR);
+        dialog.setMessage(message);
+
+// open dialog and await user selection
+        dialog.open();
+        //  display error
     }
 
     public void addControllerAsObserver(ApplicationController controller) {
@@ -76,15 +96,18 @@ public class MainShell extends Observable {
         int memoHorizontalSpan = 7;
         int memoVerticalSpan = 10;
 
+        Label messageLabel = new Label(mainShell, SWT.NULL);
+        messageLabel.setText(LabelText.LETTER_CONTENT);
         Text messageMemo = new Text(mainShell, SWT.WRAP | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-
+        setMemoLayout(messageMemo, memoHorizontalSpan, memoVerticalSpan);
         inputFieldMap.addTextField(LabelText.LETTER_CONTENT, messageMemo);
-        placeMemoWithLabel(messageMemo, LabelText.LETTER_CONTENT, memoHorizontalSpan, memoVerticalSpan);
 
         placeSendButton();
 
+        Label logLabel = new Label(mainShell, SWT.NULL);
+        logLabel.setText(LabelText.FEEDBACK);
         logMemo = new Text(mainShell, SWT.WRAP | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.READ_ONLY);
-        placeMemoWithLabel(logMemo, LabelText.FEEDBACK, memoHorizontalSpan, memoVerticalSpan);
+        setMemoLayout(logMemo, memoHorizontalSpan, memoVerticalSpan);
 
     }
 
@@ -103,7 +126,6 @@ public class MainShell extends Observable {
 
     private void placeSendButton() {
         Button sendButton = new Button(mainShell, SWT.PUSH);
-        setChanged();
         sendButton.addListener(SWT.Selection, new SendMailListener(this));
 
         sendButton.setText(LabelText.SEND_BUTTON);
@@ -144,19 +166,26 @@ public class MainShell extends Observable {
         inputFieldMap.addTextField(labelText, textField);
     }
 
-    private void placeMemoWithLabel(Text textMemo, String labelText, int horizontalSpan, int verticalSpan) {
-        Label label = new Label(mainShell, SWT.NULL);
-        GridData labelData = new GridData(GridData.FILL_VERTICAL);
-        label.setData(labelData);
-        label.setText(labelText);
+    private void setMemoLayout(Text textMemo, int horizontalSpan, int verticalSpan) {
 
         textMemo.addKeyListener(new SelectAllEventHandler(textMemo));
         // textMemo.setSize(50, 250);
         GridData textGridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_FILL);
-        // GridData textGridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL , GridData.VERTICAL_ALIGN_FILL, true, true, 20, 20);
-        //textGridData.horizontalSpan = horizontalSpan;
+        textGridData.horizontalSpan = horizontalSpan;
         textGridData.verticalSpan = verticalSpan;
-        textGridData.grabExcessVerticalSpace = false;
+        textGridData.grabExcessVerticalSpace = true;
         textMemo.setLayoutData(textGridData);
     }
+
+    private void centerMainShell() {
+        Monitor primary = display.getPrimaryMonitor();
+        Rectangle bounds = primary.getBounds();
+        Rectangle rect = mainShell.getBounds();
+
+        int x = bounds.x + (bounds.width - rect.width) / 2;
+        int y = bounds.y + (bounds.height - rect.height) / 2;
+
+        mainShell.setLocation(x, y);
+    }
+
 }

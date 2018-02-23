@@ -26,7 +26,7 @@ public class DataCmd implements SmtpCommand, ClientRequest {
         sendToServer(DATA);
         String serverMessage = receiveFromServer();
         if (!serverMessage.startsWith("5")) {
-            sendToServer(content.getBody());
+            sendToServer(content.getMailContent());
             sendToServer("\r\n.\r\n");
             serverMessage = receiveFromServer();
         }
