@@ -24,7 +24,8 @@ public class Response implements Serializable {
     }
 
     public String getMessage() {
-        return formClientMessage() + formServerMessage();
+
+        return (response != null) ? response : formClientMessage() + formServerMessage();
     }
 
     public void setResponse(String response) {

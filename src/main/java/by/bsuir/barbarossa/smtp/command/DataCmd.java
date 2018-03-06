@@ -34,7 +34,7 @@ public class DataCmd implements SmtpCommand, ClientRequest {
         return new Response(DATA, serverMessage);
     }
 
-    public void sendToServer(String message) throws SendingCommandException {
+    public void sendToServer(String message) {
         out.write(message);
         out.flush();
     }

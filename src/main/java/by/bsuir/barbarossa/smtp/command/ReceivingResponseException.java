@@ -1,7 +1,5 @@
 package by.bsuir.barbarossa.smtp.command;
 
-import by.bsuir.barbarossa.smtp.command.SmtpException;
-
 public class ReceivingResponseException extends SmtpException {
     public ReceivingResponseException() {
         super();

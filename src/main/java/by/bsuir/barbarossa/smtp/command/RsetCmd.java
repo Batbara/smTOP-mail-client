@@ -27,7 +27,7 @@ public class RsetCmd implements SmtpCommand, ClientRequest {
     }
 
     @Override
-    public void sendToServer(String message) throws SendingCommandException {
+    public void sendToServer(String message) {
         out.write(message);
         out.flush();
     }

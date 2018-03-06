@@ -33,7 +33,7 @@ public class MailCmd implements  SmtpCommand, ClientRequest {
         return new Response(mailCommand, serverMessage);
     }
 
-    public void sendToServer(String message) throws SendingCommandException {
+    public void sendToServer(String message) {
 
         out.write(message);
         out.flush();

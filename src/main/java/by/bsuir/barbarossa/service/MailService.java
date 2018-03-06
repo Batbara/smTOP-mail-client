@@ -22,8 +22,6 @@ public class MailService {
         MailValidator validator = ValidatorFactory.getInstance().getMailValidator();
         MailFormer mailFormer = EntityFormerFactory.getInstance().getMailFormer();
 
-         //String userName = textFieldMap.getTextOf(TextConstant.U)
-        //  User sender = mailFormer.formSender()
         try {
 
             String mailSubject = inputFieldMap.getTextOf(LabelText.LETTER_SUBJECT);

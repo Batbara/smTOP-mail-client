@@ -4,16 +4,19 @@ import by.bsuir.barbarossa.controller.ApplicationController;
 import by.bsuir.barbarossa.gui.listener.SelectAllEventHandler;
 import by.bsuir.barbarossa.gui.listener.SendMailListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
 import java.util.Observable;
@@ -23,21 +26,23 @@ public class MainShell extends Observable {
     private Display display;
     private Shell mainShell;
 
-    private UserCredentialsDialog userCredentialsDialog;
     private InputFieldMap inputFieldMap;
     private Text logMemo;
+    private ConfigurationDialog configurationDialog;
 
     public MainShell() {
         display = new Display();
         inputFieldMap = new InputFieldMap();
 
         mainShell = new Shell(display, SWT.CLOSE | SWT.TITLE | SWT.MIN );
+
         centerMainShell();
         initMainView();
-
-        userCredentialsDialog = new UserCredentialsDialog(mainShell, inputFieldMap);
+        setUpMenu();
         mainShell.pack();
-        userCredentialsDialog.open();
+        configurationDialog = new ConfigurationDialog(this, inputFieldMap);
+
+        configurationDialog.open();
     }
 
     public void sendData() {
@@ -77,6 +82,7 @@ public class MainShell extends Observable {
         return inputFieldMap;
     }
 
+
     private void initMainView() {
         mainShell.setText(LabelText.MAIN_SHELL_TITLE);
         GridLayout shellLayout = new GridLayout(7, false);
@@ -84,14 +90,11 @@ public class MainShell extends Observable {
 
         mainShell.setLayout(shellLayout);
 
-        int serverTextFieldSpan = 2;
-        placeTextWithLabel(LabelText.SERVER, serverTextFieldSpan);
-        placeSpinner();
 
         int textFieldHorizontalSpan = 7;
-        placeTextWithLabel(LabelText.FROM_LABEL, textFieldHorizontalSpan);
-        placeTextWithLabel(LabelText.TO_LABEL, textFieldHorizontalSpan);
-        placeTextWithLabel(LabelText.LETTER_SUBJECT, textFieldHorizontalSpan);
+        placeTextWithLabel(LabelText.FROM_LABEL, SWT.READ_ONLY |SWT.SINGLE | SWT.BORDER, textFieldHorizontalSpan);
+        placeTextWithLabel(LabelText.TO_LABEL, SWT.SINGLE | SWT.BORDER, textFieldHorizontalSpan);
+        placeTextWithLabel(LabelText.LETTER_SUBJECT, SWT.SINGLE | SWT.BORDER, textFieldHorizontalSpan);
 
         int memoHorizontalSpan = 7;
         int memoVerticalSpan = 10;
@@ -107,7 +110,7 @@ public class MainShell extends Observable {
         Label logLabel = new Label(mainShell, SWT.NULL);
         logLabel.setText(LabelText.FEEDBACK);
         logMemo = new Text(mainShell, SWT.WRAP | SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.READ_ONLY);
-        setMemoLayout(logMemo, memoHorizontalSpan, memoVerticalSpan);
+        setMemoLayout(logMemo, memoHorizontalSpan, 20);
 
     }
 
@@ -135,26 +138,36 @@ public class MainShell extends Observable {
         sendButton.setLayoutData(buttonGridData);
     }
 
-    private void placeSpinner() {
-        Label portLabel = new Label(mainShell, SWT.NULL);
-        portLabel.setText(LabelText.PORT_NUMBER);
+    private void setUpMenu() {
+        Menu  menuBar = new Menu(mainShell, SWT.BAR);
+        MenuItem configMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+        configMenuHeader.setText("Configuration");
 
-        Spinner spinner = new Spinner(mainShell, SWT.BORDER);
-        GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gridData.horizontalSpan = 3;
-        spinner.setMaximum(65535);
-        spinner.setSelection(465);
-        spinner.setLayoutData(gridData);
+        Menu configMenu = new Menu(mainShell, SWT.DROP_DOWN);
+        configMenuHeader.setMenu(configMenu);
 
-        inputFieldMap.addSpinnerField(LabelText.PORT_NUMBER, spinner);
+        MenuItem setUpMenuItem = new MenuItem(configMenu, SWT.CASCADE);
+        setUpMenuItem.setText("Set up parameters");
+
+        setUpMenuItem.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent selectionEvent) {
+                widgetDefaultSelected(selectionEvent);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent selectionEvent) {
+                configurationDialog.reOpen();
+            }
+        });
+        mainShell.setMenuBar(menuBar);
     }
-
-    private void placeTextWithLabel(String labelText, int horizontalSpan) {
+    private void placeTextWithLabel(String labelText, int style, int horizontalSpan) {
 
         Label label = new Label(mainShell, SWT.NULL);
         label.setText(labelText);
 
-        Text textField = new Text(mainShell, SWT.SINGLE | SWT.BORDER);
+        Text textField = new Text(mainShell, style);
 
         textField.addKeyListener(new SelectAllEventHandler(textField));
 
@@ -169,10 +182,10 @@ public class MainShell extends Observable {
     private void setMemoLayout(Text textMemo, int horizontalSpan, int verticalSpan) {
 
         textMemo.addKeyListener(new SelectAllEventHandler(textMemo));
-        // textMemo.setSize(50, 250);
         GridData textGridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_FILL);
         textGridData.horizontalSpan = horizontalSpan;
         textGridData.verticalSpan = verticalSpan;
+        textGridData.widthHint = 350;
         textGridData.grabExcessVerticalSpace = true;
         textMemo.setLayoutData(textGridData);
     }

@@ -15,7 +15,6 @@ public class SendMailListener implements Listener {
     @Override
     public void handleEvent(Event event) {
         if (event.type == SWT.Selection) {
-            System.out.println("sending");
             mainShell.sendData();
         }
     }

@@ -21,10 +21,6 @@ public class User implements Serializable {
         this.localHostName = localHostName;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -34,17 +30,6 @@ public class User implements Serializable {
         return encode(String.format(CREDENTIALS, userName, password));
     }
 
-    public String getEncodedUserName() {
-        return encode(userName);
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEncodedPassword() {
-        return encode(password);
-    }
 
     public void setPassword(String password) {
         this.password = password;
@@ -67,7 +52,6 @@ public class User implements Serializable {
     }
 
     private String encode(String strToEncode) {
-        //   return DatatypeConverter.printBase64Binary(strToEncode.getBytes());
         return Base64.getEncoder().encodeToString(strToEncode.getBytes(StandardCharsets.UTF_8));
     }
 }

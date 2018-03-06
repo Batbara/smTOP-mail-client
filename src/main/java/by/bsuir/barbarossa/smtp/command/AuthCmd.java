@@ -25,16 +25,7 @@ public class AuthCmd implements SmtpCommand, ClientRequest {
     public Response execute() throws SmtpException {
         User sender = envelope.getSender();
 
-         String userName = sender.getEncodedUserName();
-          String password = sender.getEncodedPassword();
         String credentials = sender.getEncodedCredentials();
-//          sendToServer(AUTH);
-//          receiveFromServer();
-//          sendToServer(credentials);
-//          //sendToServer(userName);
-//          receiveFromServer();
-         // sendToServer(password);
-        //String credentials = sender.getEncodedCredentials();
 
         String clientRequest = String.format(AUTH, credentials);
         sendToServer(clientRequest);
@@ -46,7 +37,7 @@ public class AuthCmd implements SmtpCommand, ClientRequest {
     }
 
     @Override
-    public void sendToServer(String message) throws SendingCommandException {
+    public void sendToServer(String message) {
         out.write(message);
         out.flush();
     }
@@ -55,7 +46,6 @@ public class AuthCmd implements SmtpCommand, ClientRequest {
     public String receiveFromServer() throws ReceivingResponseException {
         try {
             StringBuilder builder = new StringBuilder();
-            String response;
             do {
                 builder.append(in.readLine()).append("\n");
             } while (in.ready());

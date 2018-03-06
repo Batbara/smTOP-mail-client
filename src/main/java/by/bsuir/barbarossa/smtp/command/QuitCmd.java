@@ -25,7 +25,7 @@ public class QuitCmd implements SmtpCommand, ClientRequest {
         return new Response(QUIT, serverMessage);
     }
 
-    public void sendToServer(String message) throws SendingCommandException {
+    public void sendToServer(String message) {
         out.write(message);
         out.flush();
     }

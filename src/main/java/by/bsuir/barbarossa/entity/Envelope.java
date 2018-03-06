@@ -9,10 +9,6 @@ public class Envelope implements Serializable {
     public Envelope() {
     }
 
-    public String getSenderAddress() {
-        return sender.getMailAddress();
-    }
-
     public User getSender() {
         return sender;
     }

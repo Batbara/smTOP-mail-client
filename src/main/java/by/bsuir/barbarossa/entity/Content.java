@@ -10,20 +10,8 @@ public class Content implements Serializable {
     public Content() {
     }
 
-    public Content(String body) {
-        this.body = body;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
     public void setSubject(String subject) {
         this.subject = subject;
-    }
-
-    public String getBody() {
-        return body;
     }
 
     public String getMailContent() {

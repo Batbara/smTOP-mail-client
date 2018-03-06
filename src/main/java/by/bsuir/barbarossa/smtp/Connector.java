@@ -8,7 +8,6 @@ import by.bsuir.barbarossa.gui.MainShell;
 import by.bsuir.barbarossa.smtp.command.AuthCmd;
 import by.bsuir.barbarossa.smtp.command.DataCmd;
 import by.bsuir.barbarossa.smtp.command.EhloCmd;
-import by.bsuir.barbarossa.smtp.command.HeloCmd;
 import by.bsuir.barbarossa.smtp.command.MailCmd;
 import by.bsuir.barbarossa.smtp.command.NoopCmd;
 import by.bsuir.barbarossa.smtp.command.QuitCmd;
@@ -22,15 +21,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.Socket;
 
 public class Connector implements Runnable {
-    private Logger logger = Logger.getLogger(Connector.class);
+    private Logger LOGGER = Logger.getLogger(Connector.class);
 
     private MainShell mainShell;
     private BufferedReader in;
@@ -61,56 +56,13 @@ public class Connector implements Runnable {
         this.user = user;
     }
 
-    public boolean send(String content, String from, String to)
-            throws IOException {
-        Socket smtpPipe;
-        InputStream inn;
-        OutputStream outt;
-        BufferedReader msg;
-        smtpPipe = new Socket(server.getHost(), server.getPort());
-
-        inn = smtpPipe.getInputStream();
-        outt = smtpPipe.getOutputStream();
-        BufferedReader in = new BufferedReader(new InputStreamReader(inn));
-        PrintWriter out = new PrintWriter(new OutputStreamWriter(outt), true);
-
-        String initialID = in.readLine();
-        System.out.println(initialID);
-        // System.out.println("HELO " + localhost.getHostName());
-        //  out.println("HELO " + localhost.getHostName());
-        String welcome = in.readLine();
-        System.out.println(welcome);
-        System.out.println("MAIL From:<" + from + ">");
-        out.println("MAIL From:<" + from + ">");
-        String senderOK = in.readLine();
-        System.out.println(senderOK);
-        System.out.println("RCPT TO:<" + to + ">");
-        out.println("RCPT TO:<" + to + ">");
-        String recipientOK = in.readLine();
-        System.out.println(recipientOK);
-        System.out.println("DATA");
-        out.println("DATA");
-        out.println(content);
-       /* String line;
-        while ((line = msg.readLine()) != null) {
-            out.println(line);
-        }*/
-        System.out.println(".");
-        out.println(".");
-        String acceptedOK = in.readLine();
-        System.out.println(acceptedOK);
-        System.out.println("QUIT");
-        out.println("QUIT");
-        return true;
-    }
-
     public void run() {
 
         try {
+            clearLog();
             SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory
                     .getDefault();
             socket = (SSLSocket) sslsocketfactory.createSocket(server.getHost(), server.getPort());
-          //  socket.startHandshake();
 
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
@@ -118,10 +70,8 @@ public class Connector implements Runnable {
             Response greeting = new Response("**Created socket**\n", in.readLine());
             updateLog(greeting);
             ClientRequest[] commandList = {
-                  //  new HeloCmd(in, out, mail.getEnvelope().getSender()),
                     new EhloCmd(in, out, mail.getEnvelope().getSender()),
-                    // new NoopCmd(),
-                   new AuthCmd(in, out, mail.getEnvelope()),
+                    new AuthCmd(in, out, mail.getEnvelope()),
                     new NoopCmd(in, out),
                     new MailCmd(in, out, mail.getEnvelope()),
                     new RcptCmd(in, out, mail.getEnvelope()),
@@ -135,36 +85,34 @@ public class Connector implements Runnable {
             }
 
         } catch (IOException e) {
-            //TODO: log it
+            String message = "Connection error to server '%s', port '%d'";
+            String formattedMessage = String.format(message, server.getHost(), server.getPort());
+            LOGGER.error(formattedMessage, e);
+            updateLog(new Response(formattedMessage));
         } catch (SmtpException e) {
-            //TODO: log this too
+            String message = "Error while executing smtp command";
+            LOGGER.error(message, e);
+            updateLog(new Response(message));
         } finally {
-            if(out!=null) {
+            if (out != null) {
                 out.close();
             }
             try {
-                if(in!=null) {
+                if (in != null) {
                     in.close();
                 }
-                socket.close();
+                if (socket != null) {
+                    socket.close();
+                }
             } catch (IOException e) {
-               //log it
+                LOGGER.error("Error while closing resources", e);
             }
 
         }
     }
-    private void closeResources() throws SmtpException {
-        out.close();
-        try {
-            in.close();
-            socket.close();
-        } catch (IOException e) {
-            throw new SmtpException("Closing resources exception", e);
-        }
 
-    }
     private void updateLog(Response message) {
-        logger.debug(message.getMessage());
+        LOGGER.debug(message.getMessage());
         Display display = mainShell.getDisplay();
         Text logMemo = mainShell.getLogMemo();
         display.asyncExec(new Runnable() {
@@ -172,11 +120,22 @@ public class Connector implements Runnable {
             public void run() {
                 if (!logMemo.isDisposed()) {
                     logMemo.append(message.getMessage());
-                   // logMemo.getParent().layout();
+                    logMemo.append("\n");
                 }
             }
         });
-      //  System.err.println(message.getMessage());
+    }
+    private void clearLog(){
+        Display display = mainShell.getDisplay();
+        Text logMemo = mainShell.getLogMemo();
+        display.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!logMemo.isDisposed()) {
+                    logMemo.setText("");
+                }
+            }
+        });
     }
 
     private Response execute(ClientRequest request) throws SmtpException {
